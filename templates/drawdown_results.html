@@ -1,0 +1,26 @@
+<!-- templates/drawdown_results.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Drawdown Analysis Results</h2>
+
+<div class="mb-4">
+    <a href="{{ url_for('analysis') }}" class="btn btn-secondary">Back to Analysis</a>
+</div>
+
+<div class="row">
+    {% for instrument_name, data in results.items() %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">{{ instrument_name }}</div>
+            <div class="card-body">
+                <p><strong>Trade Count:</strong> {{ data.trade_count }}</p>
+                <p><strong>Profitable Trades:</strong> {{ data.profitable_trades }} ({{ "%.2f"|format(data.profitable_trades / data.trade_count * 100 if data.trade_count else 0) }}%)</p>
+                <p><strong>Maximum Drawdown:</strong> {{ "%.2f"|format(data.max_drawdown) }}%</p>
+                <p><strong>Average Drawdown:</strong> {{ "%.2f"|format(data.avg_drawdown) }}%</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

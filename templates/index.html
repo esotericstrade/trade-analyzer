@@ -1,0 +1,116 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Welcome Card -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Welcome to Trade Analyzer</h2>
+                    <p class="text-muted mb-0">Your professional trading performance analytics dashboard</p>
+                </div>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Upload New Data
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% if instruments %}
+        <!-- Instruments Overview -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="bi bi-briefcase-fill me-2"></i>Instruments Portfolio
+                    </h5>
+                    <span class="badge bg-primary">{{ instruments|length }} Instruments</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>INSTRUMENT</th>
+                                    <th>ADDED ON</th>
+                                    <th>TRADE COUNT</th>
+                                    <th>WIN RATE</th>
+                                    <th>P&L</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for instrument in instruments %}
+                                {% set profitable_trades = instrument.trades|selectattr('profit_inr', 'gt', 0)|list|length %}
+                                {% set win_rate = (profitable_trades / instrument.trades|length * 100) if instrument.trades else 0 %}
+                                {% set total_pnl = instrument.trades|sum(attribute='profit_inr') if instrument.trades else 0 %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded p-2 me-3">
+                                                <i class="bi bi-currency-exchange text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ instrument.name }}</h6>
+                                                <small class="text-muted">ID: {{ instrument.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ instrument.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ instrument.trades|length }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px; width: 80px;">
+                                                <div class="progress-bar {{ 'bg-success' if win_rate >= 50 else 'bg-warning' }}" 
+                                                     role="progressbar" style="width: {{ win_rate }}%"
+                                                     aria-valuenow="{{ win_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <span>{{ "%.1f"|format(win_rate) }}%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="{{ 'text-success' if total_pnl > 0 else 'text-danger' }}">
+                                            {{ "%.2f"|format(total_pnl) }} INR
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('instrument_details', instrument_id=instrument.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-bar-chart-steps text-primary" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="mb-3">No instruments found</h3>
+                    <p class="text-muted mb-4">Get started by uploading a CSV file with your trading data.</p>
+                    <a href="{{ url_for('upload') }}" class="btn btn-primary">
+                        <i class="bi bi-cloud-upload me-2"></i>Upload CSV File
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

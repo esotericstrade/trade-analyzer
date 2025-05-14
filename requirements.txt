@@ -1,0 +1,27 @@
+# Web Framework
+Flask==2.0.3
+Werkzeug==2.0.3
+Flask-WTF==1.0.1
+
+# Database
+SQLAlchemy==1.4.46
+psycopg2-binary==2.9.3
+
+# Data Processing
+pandas==1.5.3
+numpy==1.24.3
+
+# Visualization
+matplotlib==3.5.3
+plotly==5.13.1
+
+# Utilities
+python-dotenv==0.21.0
+Jinja2==3.0.3
+click==8.0.4
+itsdangerous==2.0.1
+
+# Development Tools (optional)
+pytest==7.3.1
+black==23.3.0
+flake8==6.0.0

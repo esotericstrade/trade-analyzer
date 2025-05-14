@@ -1,0 +1,253 @@
+<!-- templates/upload.html -->
+{% extends 'base.html' %}
+
+{% block page_title %}Upload Trading Data{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Upload Card -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-cloud-upload-fill me-2"></i>Upload Trade CSV
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="instrument_name" class="form-label fw-semibold">
+                            <i class="bi bi-tag me-1"></i>Instrument Name
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-currency-exchange"></i>
+                            </span>
+                            <input type="text" class="form-control" id="instrument_name" 
+                                   name="instrument_name" placeholder="e.g., NIFTY, BANKNIFTY, INS1" required>
+                        </div>
+                        <div class="form-text">Enter a name for this instrument (e.g., "INS1", "NIFTY")</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="file" class="form-label fw-semibold">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i>CSV File
+                        </label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="file" name="file" 
+                                   accept=".csv" required>
+                            <span class="input-group-text">
+                                <i class="bi bi-file-csv"></i>
+                            </span>
+                        </div>
+                        <div class="form-text">Upload a CSV file with your trade data</div>
+                    </div>
+                    
+                    <div class="alert alert-info d-flex" role="alert">
+                        <div class="me-3">
+                            <i class="bi bi-info-circle-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <strong>Tip:</strong> Make sure your CSV file follows the expected format. Check the format guide below for details.
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-2"></i>Upload Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Format Guide Card -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-file-spreadsheet me-2"></i>CSV Format Guide
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Your CSV file should include the following columns:</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Description</th>
+                                <th>Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Trade #</code></td>
+                                <td>Unique identifier for each trade</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Type</code></td>
+                                <td>Entry or Exit position (Long or Short)</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Signal</code></td>
+                                <td>Trading signal</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Date/Time</code></td>
+                                <td>When the trade was executed</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Price INR</code></td>
+                                <td>Price at entry or exit</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Contracts</code></td>
+                                <td>Number of contracts traded</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Profit INR</code></td>
+                                <td>Profit or loss in INR</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Profit %</code></td>
+                                <td>Profit or loss as percentage</td>
+                                <td><span class="badge bg-success">Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Cumulative profit INR</code></td>
+                                <td>Running total of profits</td>
+                                <td><span class="badge bg-warning text-dark">Optional</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Cumulative profit %</code></td>
+                                <td>Running total of profits in %</td>
+                                <td><span class="badge bg-warning text-dark">Optional</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Run-up INR</code></td>
+                                <td>Maximum favorable excursion</td>
+                                <td><span class="badge bg-warning text-dark">Optional</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Run-up %</code></td>
+                                <td>Maximum favorable excursion in %</td>
+                                <td><span class="badge bg-warning text-dark">Optional</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Drawdown INR</code></td>
+                                <td>Maximum adverse excursion</td>
+                                <td><span class="badge bg-warning text-dark">Optional</span></td>
+                            </tr>
+                            <tr>
+                                <td><code>Drawdown %</code></td>
+                                <td>Maximum adverse excursion in %</td>
+                                <td><span class="badge bg-warning text-dark">Optional</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3">
+                    <h6 class="mb-2">Sample CSV Format:</h6>
+                    <div class="bg-light p-3 rounded">
+                        <pre class="mb-0"><code>Trade #,Type,Signal,Date/Time,Price INR,Contracts,Profit INR,Profit %
+1,Long Entry,Buy,2023-01-01 10:30,1000,1,0,0
+1,Exit Long,Sell,2023-01-01 14:45,1050,1,50,5
+2,Short Entry,Sell,2023-01-02 09:15,950,2,0,0
+2,Exit Short,Buy,2023-01-02 15:30,925,2,50,2.63</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recently Uploaded Data (Conditional) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-clock-history me-2"></i>Recently Uploaded Data
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if instruments and instruments|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>INSTRUMENT</th>
+                                    <th>UPLOADED</th>
+                                    <th>TRADE COUNT</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for instrument in instruments|sort(attribute='created_at', reverse=true)|slice(0, 5) %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded p-2 me-3">
+                                                <i class="bi bi-currency-exchange text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ instrument.name }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar2 me-2 text-muted"></i>
+                                            {{ instrument.created_at.strftime('%Y-%m-%d') }}
+                                            <small class="text-muted ms-1">{{ instrument.created_at.strftime('%H:%M') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary rounded-pill">
+                                            {{ instrument.trades|length }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('instrument_details', instrument_id=instrument.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if instruments|length > 5 %}
+                        <div class="p-3 text-center">
+                            <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-grid-3x3-gap me-1"></i>View All Instruments
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="text-muted">No instruments uploaded yet</h5>
+                        <p class="text-muted">Use the form above to upload your first trading data file.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

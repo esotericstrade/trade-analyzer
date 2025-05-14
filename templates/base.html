@@ -1,0 +1,443 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Analyzer | Professional Trading Analytics</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --border-radius: 0.5rem;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.2s ease-in-out;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: #fff;
+            border-right: 1px solid var(--gray-light);
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Sidebar */
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo i {
+            font-size: 1.75rem;
+        }
+        
+        .nav-group {
+            padding: 1rem 0;
+        }
+        
+        .nav-header {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray);
+            padding: 0.5rem 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-item {
+            padding: 0.5rem 1.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            color: var(--dark);
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(37, 99, 235, 0.08);
+            color: var(--primary);
+        }
+        
+        .nav-link.active {
+            background-color: rgba(37, 99, 235, 0.12);
+            color: var(--primary);
+        }
+        
+        .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+        
+        /* Header */
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .toggle-sidebar {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 992px) {
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            background-color: #fff;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid var(--gray-light);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Form elements */
+        .form-label {
+            font-weight: 500;
+        }
+        
+        .form-control, .form-select {
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-light);
+            padding: 0.75rem 1rem;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+        
+        .form-text {
+            font-size: 0.8125rem;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.75em;
+            border-radius: 30px;
+        }
+        
+        /* Tables */
+        .table {
+            vertical-align: middle;
+        }
+        
+        .table thead th {
+            font-weight: 600;
+            background-color: #f8fafc;
+            border-bottom-width: 1px;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            padding: 0.75rem 1rem;
+        }
+        
+        .table-sm td {
+            padding: 0.75rem 1rem;
+        }
+        
+        /* Data visualization */
+        .progress {
+            border-radius: 30px;
+            height: 0.75rem;
+            background-color: var(--gray-light);
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            padding: 1rem 1.25rem;
+            border: none;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .alert i {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+            margin-top: 0.125rem;
+        }
+        
+        /* Accordion */
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(37, 99, 235, 0.05);
+            color: var(--primary);
+            box-shadow: none;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--gray-light);
+        }
+        
+        /* Metrics cards */
+        .metric-card {
+            border-radius: var(--border-radius);
+            background-color: #fff;
+            border: 1px solid var(--gray-light);
+            padding: 1rem;
+            height: 100%;
+            transition: var(--transition);
+        }
+        
+        .metric-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Trade Analyzer</span>
+                </div>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-header">Main</div>
+                <div class="nav-item">
+                    <a href="{{ url_for('index') }}" class="nav-link {{ 'active' if request.path == url_for('index') }}">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('upload') }}" class="nav-link {{ 'active' if request.path == url_for('upload') }}">
+                        <i class="bi bi-cloud-upload-fill"></i>
+                        <span>Upload Data</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('analysis') }}" class="nav-link {{ 'active' if request.path == url_for('analysis') }}">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Analysis</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                
+                <div></div> <!-- Placeholder for future header content like user profile -->
+            </div>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
+                            {% if category == 'success' %}
+                                <i class="bi bi-check-circle-fill"></i>
+                            {% elif category == 'error' or category == 'danger' %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% elif category == 'warning' %}
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill"></i>
+                            {% endif %}
+                            <div>{{ message }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Main Content -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 992 && sidebar.classList.contains('show') && 
+                    !sidebar.contains(event.target) && event.target !== toggleBtn) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

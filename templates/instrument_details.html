@@ -1,0 +1,325 @@
+<!-- templates/instrument_details.html -->
+{% extends 'base.html' %}
+
+{% block page_title %}{{ instrument.name }} - Details{% endblock %}
+
+{% block content %}
+<!-- Header Section with Back Button -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            
+            <div>
+                <a href="{{ url_for('analysis') }}" class="btn btn-primary">
+                    <i class="bi bi-graph-up me-2"></i>Analyze
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instrument Overview -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle me-2"></i>{{ instrument.name }} Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <!-- Performance Summary -->
+                    <div class="col-md-6">
+                        <div class="card border h-100">
+                            <div class="card-header bg-light py-3">
+                                <h6 class="card-title mb-0">Performance Summary</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Total Trades -->
+                                    <div class="col-6">
+                                        <div class="p-3 bg-light rounded text-center">
+                                            <div class="text-muted small mb-1">Total Trades</div>
+                                            <h3 class="mb-0">{{ trades|length }}</h3>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Win Rate -->
+                                    <div class="col-6">
+                                        <div class="p-3 bg-light rounded text-center">
+                                            <div class="text-muted small mb-1">Win Rate</div>
+                                            {% set win_rate = trades|selectattr('profit_inr', 'gt', 0)|list|length / trades|length * 100 if trades else 0 %}
+                                            <h3 class="mb-0 {{ 'text-success' if win_rate >= 50 else 'text-danger' }}">
+                                                {{ "%.1f"|format(win_rate) }}%
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Profitable Trades -->
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="rounded-circle p-2 bg-success bg-opacity-10">
+                                                    <i class="bi bi-graph-up-arrow text-success"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-muted small">Profitable Trades</div>
+                                                <h5 class="mb-0 text-success">
+                                                    {{ trades|selectattr('profit_inr', 'gt', 0)|list|length }}
+                                                </h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Losing Trades -->
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="rounded-circle p-2 bg-danger bg-opacity-10">
+                                                    <i class="bi bi-graph-down-arrow text-danger"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-muted small">Losing Trades</div>
+                                                <h5 class="mb-0 text-danger">
+                                                    {{ trades|selectattr('profit_inr', 'le', 0)|list|length }}
+                                                </h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Total Profit -->
+                                    <div class="col-12">
+                                        <div class="p-3 bg-light rounded text-center">
+                                            <div class="text-muted small mb-1">Total Profit/Loss</div>
+                                            {% set total_pnl = trades|sum(attribute='profit_inr') %}
+                                            <h3 class="mb-0 {{ 'text-success' if total_pnl > 0 else 'text-danger' }}">
+                                                {{ "%.2f"|format(total_pnl) }} INR
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trade Type Analysis -->
+                    <div class="col-md-6">
+                        <div class="card border h-100">
+                            <div class="card-header bg-light py-3">
+                                <h6 class="card-title mb-0">Long vs Short Performance</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Long Trades -->
+                                    <div class="col-6">
+                                        <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted small">Long Trades</span>
+                                                <span class="badge bg-primary">
+                                                    {{ trades|selectattr('entry_type', 'equalto', 'Long')|list|length }}
+                                                </span>
+                                            </div>
+                                            
+                                            {% set long_trades = trades|selectattr('entry_type', 'equalto', 'Long')|list %}
+                                            {% set long_profit = long_trades|sum(attribute='profit_inr') if long_trades else 0 %}
+                                            {% set long_win_rate = long_trades|selectattr('profit_inr', 'gt', 0)|list|length / long_trades|length * 100 if long_trades else 0 %}
+                                            
+                                            <div class="mb-2">
+                                                <div class="text-muted small mb-1">Profit/Loss</div>
+                                                <h5 class="mb-0 {{ 'text-success' if long_profit > 0 else 'text-danger' }}">
+                                                    {{ "%.2f"|format(long_profit) }} INR
+                                                </h5>
+                                            </div>
+                                            
+                                            <div>
+                                                <div class="text-muted small mb-1">Win Rate</div>
+                                                <div class="progress mb-1" style="height: 6px;">
+                                                    <div class="progress-bar {{ 'bg-success' if long_win_rate >= 50 else 'bg-warning' }}" 
+                                                         role="progressbar" style="width: {{ long_win_rate }}%" 
+                                                         aria-valuenow="{{ long_win_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="small {{ 'text-success' if long_win_rate >= 50 else 'text-danger' }}">
+                                                        {{ "%.1f"|format(long_win_rate) }}%
+                                                    </span>
+                                                    <span class="text-muted small">
+                                                        {% set long_win_count = long_trades|selectattr('profit_inr', 'gt', 0)|list|length %}
+                                                        ({{ long_win_count }}/{{ long_trades|length }})
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Short Trades -->
+                                    <div class="col-6">
+                                        <div class="p-3 bg-secondary bg-opacity-10 rounded">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted small">Short Trades</span>
+                                                <span class="badge bg-secondary">
+                                                    {{ trades|selectattr('entry_type', 'equalto', 'Short')|list|length }}
+                                                </span>
+                                            </div>
+                                            
+                                            {% set short_trades = trades|selectattr('entry_type', 'equalto', 'Short')|list %}
+                                            {% set short_profit = short_trades|sum(attribute='profit_inr') if short_trades else 0 %}
+                                            {% set short_win_rate = short_trades|selectattr('profit_inr', 'gt', 0)|list|length / short_trades|length * 100 if short_trades else 0 %}
+                                            
+                                            <div class="mb-2">
+                                                <div class="text-muted small mb-1">Profit/Loss</div>
+                                                <h5 class="mb-0 {{ 'text-success' if short_profit > 0 else 'text-danger' }}">
+                                                    {{ "%.2f"|format(short_profit) }} INR
+                                                </h5>
+                                            </div>
+                                            
+                                            <div>
+                                                <div class="text-muted small mb-1">Win Rate</div>
+                                                <div class="progress mb-1" style="height: 6px;">
+                                                    <div class="progress-bar {{ 'bg-success' if short_win_rate >= 50 else 'bg-warning' }}" 
+                                                         role="progressbar" style="width: {{ short_win_rate }}%" 
+                                                         aria-valuenow="{{ short_win_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="small {{ 'text-success' if short_win_rate >= 50 else 'text-danger' }}">
+                                                        {{ "%.1f"|format(short_win_rate) }}%
+                                                    </span>
+                                                    <span class="text-muted small">
+                                                        {% set short_win_count = short_trades|selectattr('profit_inr', 'gt', 0)|list|length %}
+                                                        ({{ short_win_count }}/{{ short_trades|length }})
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Average Metrics -->
+                                    <div class="col-12">
+                                        <div class="p-3 bg-light rounded">
+                                            <div class="row text-center">
+                                                <div class="col-6">
+                                                    <div class="text-muted small mb-1">Avg Long Profit</div>
+                                                    {% set avg_long_profit = long_profit / long_trades|length if long_trades else 0 %}
+                                                    <h5 class="mb-0 {{ 'text-success' if avg_long_profit > 0 else 'text-danger' }}">
+                                                        {{ "%.2f"|format(avg_long_profit) }} INR
+                                                    </h5>
+                                                </div>
+                                                
+                                                <div class="col-6">
+                                                    <div class="text-muted small mb-1">Avg Short Profit</div>
+                                                    {% set avg_short_profit = short_profit / short_trades|length if short_trades else 0 %}
+                                                    <h5 class="mb-0 {{ 'text-success' if avg_short_profit > 0 else 'text-danger' }}">
+                                                        {{ "%.2f"|format(avg_short_profit) }} INR
+                                                    </h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trade History -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-list-ul me-2"></i>Trade History
+                </h5>
+                <div>
+                    <span class="badge bg-primary rounded-pill">{{ trades|length }} trades</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if trades %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>TRADE #</th>
+                                    <th>TYPE</th>
+                                    <th>ENTRY DATE</th>
+                                    <th>EXIT DATE</th>
+                                    <th>HOLDING TIME</th>
+                                    <th>PROFIT/LOSS</th>
+                                    <th>DRAWDOWN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in trades|sort(attribute='entry_datetime', reverse=true) %}
+                                <tr class="{{ 'table-success' if trade.profit_inr > 0 else 'table-danger' if trade.profit_inr < 0 else '' }}">
+                                    <td class="fw-medium">{{ trade.trade_number }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-primary' if trade.entry_type == 'Long' else 'bg-secondary' }}">
+                                            {{ trade.entry_type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-date me-1 text-muted"></i>
+                                            {{ trade.entry_datetime.strftime('%Y-%m-%d') }}
+                                            <small class="text-muted ms-1">{{ trade.entry_datetime.strftime('%H:%M') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-date me-1 text-muted"></i>
+                                            {% if trade.exit_datetime %}
+                                                {{ trade.exit_datetime.strftime('%Y-%m-%d') }}
+                                                <small class="text-muted ms-1">{{ trade.exit_datetime.strftime('%H:%M') }}</small>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Open</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-clock me-1 text-muted"></i>
+                                            {{ "%.2f"|format(trade.holding_time_hours or 0) }} hrs
+                                        </div>
+                                    </td>
+                                    <td class="{{ 'text-success' if trade.profit_inr > 0 else 'text-danger' }}">
+                                        <div>
+                                            <strong>{{ "%.2f"|format(trade.profit_inr or 0) }}</strong> INR
+                                        </div>
+                                        <small>{{ "%.2f"|format(trade.profit_percentage or 0) }}%</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center text-danger">
+                                            <i class="bi bi-arrow-down me-1"></i>
+                                            {{ "%.2f"|format(trade.drawdown_percentage or 0) }}%
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="text-muted">No trades found</h5>
+                        <p class="text-muted">There are no trades recorded for this instrument.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+<!-- templates/analysis.html -->
+{% extends 'base.html' %}
+
+{% block page_title %}Analysis{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-calculator me-2"></i>Comprehensive Performance Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('analyze_cumulative') }}">
+                    <!-- Instrument Selection Section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-collection me-2"></i>Select Instruments
+                        </label>
+                        
+                        {% if instruments %}
+                            <div class="row g-3">
+                                {% for instrument in instruments %}
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-check custom-checkbox">
+                                        <input class="form-check-input" type="checkbox" name="instruments" 
+                                               value="{{ instrument.id }}" id="instrument{{ instrument.id }}">
+                                        <label class="form-check-label d-flex justify-content-between w-100" 
+                                               for="instrument{{ instrument.id }}">
+                                            <span>{{ instrument.name }}</span>
+                                            <span class="badge bg-light text-dark">{{ instrument.trades|length }} trades</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                No instruments available. Please <a href="{{ url_for('upload') }}">upload data</a> first.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Date Range Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-calendar-range me-2"></i>Date Range
+                        </label>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </span>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" placeholder="Start Date">
+                                    <div class="invalid-feedback">Please select a valid start date.</div>
+                                </div>
+                                <div class="form-text">Entry date on or after this date</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </span>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" placeholder="End Date">
+                                    <div class="invalid-feedback">Please select a valid end date.</div>
+                                </div>
+                                <div class="form-text">Exit date on or before this date</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-lightning-charge me-2"></i>Generate Analysis
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tips & Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-lightbulb me-2"></i>Analysis Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                    <i class="bi bi-check-circle text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6>Select Multiple Instruments</h6>
+                                <p class="text-muted small">Compare performance across different instruments to identify strengths and weaknesses.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                    <i class="bi bi-calendar-week text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6>Analyze Specific Periods</h6>
+                                <p class="text-muted small">Use date filters to focus on specific market conditions or trading strategies.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                    <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6>Review Monthly Performance</h6>
+                                <p class="text-muted small">Monthly breakdowns help identify seasonal patterns and performance trends.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
