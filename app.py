@@ -15,6 +15,24 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+app.config['APPLICATION_ROOT'] = '/trade-analyzer'
+
+class PrefixMiddleware:
+    def __init__(self, app, prefix='/'):
+        self.app = app
+        self.prefix = prefix
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith(self.prefix):
+            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
+            environ['SCRIPT_NAME'] = self.prefix
+            return self.app(environ, start_response)
+        else:
+            start_response('404', [('Content-Type', 'text/plain')])
+            return [b'Not Found']
+
+app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/trade-analyzer')
+
 # Initialize database
 init_db()
 
