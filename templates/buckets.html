@@ -1,0 +1,490 @@
+<!-- templates/buckets.html -->
+{% extends 'base.html' %}
+
+{% block page_title %}Manage Buckets{% endblock %}
+
+{% block content %}
+<!-- Header Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Bucket Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBucketModal">
+                <i class="bi bi-folder-plus me-2"></i>Create New Bucket
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Buckets List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-folder-fill me-2"></i>Your Buckets
+                </h5>
+                {% if buckets %}
+                <span class="badge bg-primary">{{ buckets|length }} Buckets</span>
+                {% endif %}
+            </div>
+            
+            <div class="card-body p-0">
+                {% if buckets %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%">BUCKET NAME</th>
+                                    <th style="width: 55%">INSTRUMENTS</th>
+                                    <th style="width: 10%">CREATED</th>
+                                    <th style="width: 10%">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bucket in buckets %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                                <i class="bi bi-folder text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ bucket.name }}</h6>
+                                                {% if bucket.description %}
+                                                <small class="text-muted">{{ bucket.description }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1 instrument-tags">
+                                            {% if bucket.instruments|length > 0 %}
+                                                {% for instrument in bucket.instruments %}
+                                                <span class="badge bg-light text-dark">
+                                                    {{ instrument.name }}
+                                                </span>
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="badge bg-light text-muted">No instruments</span>
+                                            {% endif %}
+                                            
+                                            {% if bucket.instruments|length > 6 %}
+                                                <button class="badge bg-primary border-0 show-more-btn" type="button" 
+                                                        data-bs-toggle="collapse" data-bs-target="#moreInstruments{{ bucket.id }}">
+                                                    <i class="bi bi-plus-circle me-1"></i>Show all
+                                                </button>
+                                                <div class="collapse mt-2 w-100" id="moreInstruments{{ bucket.id }}">
+                                                    <div class="card card-body py-2 px-3">
+                                                        {% for instrument in bucket.instruments %}
+                                                        <div class="mb-1">{{ instrument.name }}</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>{{ bucket.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary edit-bucket-btn"
+                                                    data-bucket-id="{{ bucket.id }}"
+                                                    data-bucket-name="{{ bucket.name }}"
+                                                    data-bucket-description="{{ bucket.description or '' }}"
+                                                    {% set instrument_ids = [] %}
+                                                    {% for i in bucket.instruments %}
+                                                        {% set _ = instrument_ids.append(i.id) %}
+                                                    {% endfor %}
+                                                    data-instruments="{{ instrument_ids|tojson }}"
+                                                    data-bs-toggle="modal" data-bs-target="#editBucketModal">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteBucketModal{{ bucket.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade" id="deleteBucketModal{{ bucket.id }}" 
+                                             tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirm Deletion</h5>
+                                                        <button type="button" class="btn-close" 
+                                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to delete bucket 
+                                                        <strong>{{ bucket.name }}</strong>?
+                                                        This action cannot be undone.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" 
+                                                                data-bs-dismiss="modal">Cancel</button>
+                                                        <form action="{{ url_for('delete_bucket', bucket_id=bucket.id) }}" 
+                                                              method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-danger">
+                                                                Delete Bucket
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-folder-x text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="text-muted">No buckets created yet</h5>
+                        <p class="text-muted mb-4">Get started by creating your first bucket to organize your instruments.</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBucketModal">
+                            <i class="bi bi-folder-plus me-2"></i>Create New Bucket
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Bucket Modal -->
+<div class="modal fade" id="createBucketModal" tabindex="-1" aria-labelledby="createBucketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createBucketModalLabel">
+                    <i class="bi bi-folder-plus me-2"></i>Create New Bucket
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_bucket') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bucket_name" class="form-label">Bucket Name</label>
+                        <input type="text" class="form-control" id="bucket_name" name="bucket_name" 
+                               placeholder="Enter bucket name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="2" placeholder="Enter a description"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Instruments</label>
+                        
+                        {% if instruments %}
+                            <div class="instrument-selection">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control instrument-search" 
+                                                   placeholder="Search instruments...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-2 text-md-end">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary select-all-btn">
+                                            Select All
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary clear-all-btn">
+                                            Clear All
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-body p-0">
+                                        <div class="instrument-list" style="max-height: 250px; overflow-y: auto;">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <tbody>
+                                                    {% for instrument in instruments %}
+                                                    <tr class="instrument-item">
+                                                        <td style="width: 40px;">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input instrument-checkbox" 
+                                                                       type="checkbox" name="instruments" 
+                                                                       value="{{ instrument.id }}" 
+                                                                       id="create_instrument{{ instrument.id }}">
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <label class="form-check-label w-100" 
+                                                                   for="create_instrument{{ instrument.id }}">
+                                                                {{ instrument.name }}
+                                                            </label>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <span class="badge bg-light text-dark">
+                                                                {{ instrument.trades|length }} trades
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="selected-count mt-2 text-muted small">
+                                    0 instruments selected
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                No instruments available. Please upload data first.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create Bucket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Bucket Modal -->
+<div class="modal fade" id="editBucketModal" tabindex="-1" aria-labelledby="editBucketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBucketModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Bucket
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editBucketForm" action="">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_bucket_name" class="form-label">Bucket Name</label>
+                        <input type="text" class="form-control" id="edit_bucket_name" name="bucket_name" 
+                               placeholder="Enter bucket name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="edit_description" name="description" 
+                                  rows="2" placeholder="Enter a description"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Instruments</label>
+                        
+                        {% if instruments %}
+                            <div class="instrument-selection">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control instrument-search" 
+                                                   placeholder="Search instruments...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-2 text-md-end">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary select-all-btn">
+                                            Select All
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary clear-all-btn">
+                                            Clear All
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-body p-0">
+                                        <div class="instrument-list" style="max-height: 250px; overflow-y: auto;">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <tbody>
+                                                    {% for instrument in instruments %}
+                                                    <tr class="instrument-item">
+                                                        <td style="width: 40px;">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input instrument-checkbox" 
+                                                                       type="checkbox" name="instruments" 
+                                                                       value="{{ instrument.id }}" 
+                                                                       id="edit_instrument{{ instrument.id }}">
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <label class="form-check-label w-100" 
+                                                                   for="edit_instrument{{ instrument.id }}">
+                                                                {{ instrument.name }}
+                                                            </label>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <span class="badge bg-light text-dark">
+                                                                {{ instrument.trades|length }} trades
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="selected-count mt-2 text-muted small">
+                                    0 instruments selected
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                No instruments available. Please upload data first.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<style>
+    .instrument-tags .badge {
+        margin-right: 4px;
+        margin-bottom: 4px;
+        white-space: normal;
+        text-align: left;
+        line-height: 1.5;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .instrument-list label {
+        cursor: pointer;
+        padding: 8px 0;
+    }
+    
+    .instrument-list tr:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .show-more-btn {
+        cursor: pointer;
+    }
+    
+    .instrument-item.hidden {
+        display: none;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Edit bucket functionality
+        const editBucketButtons = document.querySelectorAll('.edit-bucket-btn');
+        editBucketButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const bucketId = this.getAttribute('data-bucket-id');
+                const bucketName = this.getAttribute('data-bucket-name');
+                const bucketDescription = this.getAttribute('data-bucket-description');
+                const instruments = JSON.parse(this.getAttribute('data-instruments'));
+                
+                // Set form action
+                document.getElementById('editBucketForm').action = `/buckets/${bucketId}/edit`;
+                
+                // Fill form data
+                document.getElementById('edit_bucket_name').value = bucketName;
+                document.getElementById('edit_description').value = bucketDescription;
+                
+                // Check the correct instruments
+                document.querySelectorAll('#editBucketModal .instrument-checkbox').forEach(checkbox => {
+                    checkbox.checked = instruments.includes(parseInt(checkbox.value));
+                });
+                
+                // Update counter
+                updateSelectedCount(document.querySelector('#editBucketModal .instrument-selection'));
+            });
+        });
+        
+        // Instrument search functionality
+        const instrumentSelections = document.querySelectorAll('.instrument-selection');
+        instrumentSelections.forEach(selection => {
+            const searchInput = selection.querySelector('.instrument-search');
+            const instrumentItems = selection.querySelectorAll('.instrument-item');
+            const checkboxes = selection.querySelectorAll('.instrument-checkbox');
+            const selectAllBtn = selection.querySelector('.select-all-btn');
+            const clearAllBtn = selection.querySelector('.clear-all-btn');
+            const selectedCount = selection.querySelector('.selected-count');
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                instrumentItems.forEach(item => {
+                    const itemText = item.querySelector('label').textContent.toLowerCase();
+                    if (searchTerm === '' || itemText.includes(searchTerm)) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Select all/clear all buttons
+            selectAllBtn.addEventListener('click', function() {
+                checkboxes.forEach(checkbox => {
+                    const row = checkbox.closest('.instrument-item');
+                    if (!row.classList.contains('hidden')) {
+                        checkbox.checked = true;
+                    }
+                });
+                updateSelectedCount(selection);
+            });
+            
+            clearAllBtn.addEventListener('click', function() {
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+                updateSelectedCount(selection);
+            });
+            
+            // Update counter when checkboxes change
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectedCount(selection);
+                });
+            });
+            
+            // Initial count
+            updateSelectedCount(selection);
+        });
+        
+        // Function to update selected count
+        function updateSelectedCount(selection) {
+            const checkboxes = selection.querySelectorAll('.instrument-checkbox');
+            const selectedCount = selection.querySelector('.selected-count');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            selectedCount.textContent = `${checkedCount} instruments selected`;
+        }
+    });
+</script>
+{% endblock %}

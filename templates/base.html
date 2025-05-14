@@ -370,6 +370,12 @@
                     </a>
                 </div>
                 <div class="nav-item">
+                    <a href="{{ url_for('buckets') }}" class="nav-link {{ 'active' if request.path == url_for('buckets') }}">
+                        <i class="bi bi-folder2-open"></i>
+                        <span>Buckets</span>
+                    </a>
+                </div>
+                <div class="nav-item">
                     <a href="{{ url_for('analysis') }}" class="nav-link {{ 'active' if request.path == url_for('analysis') }}">
                         <i class="bi bi-graph-up-arrow"></i>
                         <span>Analysis</span>
@@ -439,5 +445,7 @@
             });
         });
     </script>
+    
+    {% block additional_scripts %}{% endblock %}
 </body>
 </html>

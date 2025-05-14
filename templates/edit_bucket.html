@@ -1,0 +1,79 @@
+<!-- templates/edit_bucket.html -->
+{% extends 'base.html' %}
+
+{% block page_title %}Edit Bucket{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('buckets') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Buckets
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Bucket
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_bucket', bucket_id=bucket.id) }}">
+                    <div class="mb-3">
+                        <label for="bucket_name" class="form-label">Bucket Name</label>
+                        <input type="text" class="form-control" id="bucket_name" name="bucket_name" 
+                               value="{{ bucket.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="2">{{ bucket.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Select Instruments</label>
+                        
+                        {% if instruments %}
+                            <div class="row g-3">
+                                {% for instrument in instruments %}
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="instruments" value="{{ instrument.id }}" 
+                                               id="instrument{{ instrument.id }}"
+                                               {% if instrument.id in selected_instruments %}checked{% endif %}>
+                                        <label class="form-check-label" for="instrument{{ instrument.id }}">
+                                            {{ instrument.name }}
+                                            <span class="badge bg-light text-dark ms-1">
+                                                {{ instrument.trades|length }} trades
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                No instruments available. Please upload data first.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('buckets') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

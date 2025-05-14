@@ -1,11 +1,37 @@
 # models.py
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 import os
 from datetime import datetime
 
 Base = declarative_base()
+
+class Bucket(Base):
+    __tablename__ = 'buckets'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    description = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Many-to-many relationship with instruments
+    instruments = relationship(
+        "Instrument", 
+        secondary="bucket_instruments",
+        back_populates="buckets"
+    )
+    
+    def __repr__(self):
+        return f"<Bucket(name='{self.name}')>"
+
+# Association table for the many-to-many relationship
+bucket_instruments = Table(
+    'bucket_instruments',
+    Base.metadata,
+    Column('bucket_id', Integer, ForeignKey('buckets.id'), primary_key=True),
+    Column('instrument_id', Integer, ForeignKey('instruments.id'), primary_key=True)
+)
 
 class Instrument(Base):
     __tablename__ = 'instruments'
@@ -16,6 +42,12 @@ class Instrument(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     trades = relationship("Trade", back_populates="instrument", cascade="all, delete-orphan")
+     # Add this new relationship
+    buckets = relationship(
+        "Bucket",
+        secondary="bucket_instruments",
+        back_populates="instruments"
+    )
     
     def __repr__(self):
         return f"<Instrument(name='{self.name}')>"

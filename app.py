@@ -3,7 +3,7 @@ import os
 from flask import Flask, request, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from database import init_db, get_db
-from models import Instrument, Trade
+from models import Instrument, Trade, Bucket  # Add Bucket to the imports
 from utils.csv_parser import parse_trade_csv
 import pandas as pd
 from datetime import datetime
@@ -98,7 +98,8 @@ def instrument_details(instrument_id):
 def analysis():
     db = next(get_db())
     instruments = db.query(Instrument).all()
-    return render_template('analysis.html', instruments=instruments)
+    buckets = db.query(Bucket).all()
+    return render_template('analysis.html', instruments=instruments, buckets=buckets)
 
 @app.route('/analyze_drawdowns', methods=['POST'])
 def analyze_drawdowns():
@@ -132,12 +133,21 @@ def analyze_drawdowns():
 @app.route('/analyze_cumulative', methods=['POST'])
 def analyze_cumulative():
     selected_instruments = request.form.getlist('instruments')
+    selected_bucket_id = request.form.get('bucket')
     start_date_str = request.form.get('start_date')
     end_date_str = request.form.get('end_date')
     
+    # If a bucket is selected, use its instruments
+    if selected_bucket_id:
+        db = next(get_db())
+        bucket = db.query(Bucket).get(int(selected_bucket_id))
+        if bucket:
+            selected_instruments = [str(instrument.id) for instrument in bucket.instruments]
+    
     if not selected_instruments:
-        flash('Please select at least one instrument', 'error')
+        flash('Please select at least one instrument or bucket', 'error')
         return redirect(url_for('analysis'))
+    
     
     # Parse dates if provided
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d') if start_date_str else None
@@ -244,6 +254,115 @@ def analyze_cumulative():
         instrument_trades=instrument_trades,
         current_datetime=current_datetime
     )
+
+
+@app.route('/buckets')
+def buckets():
+    db = next(get_db())
+    buckets = db.query(Bucket).all()
+    instruments = db.query(Instrument).all()
+    return render_template('buckets.html', buckets=buckets, instruments=instruments)
+
+@app.route('/buckets/create', methods=['POST'])
+def create_bucket():
+    if request.method == 'POST':
+        name = request.form.get('bucket_name')
+        description = request.form.get('description', '')
+        instrument_ids = request.form.getlist('instruments')
+        
+        if not name:
+            flash('Bucket name is required', 'error')
+            return redirect(url_for('buckets'))
+        
+        db = next(get_db())
+        
+        # Check if bucket with this name already exists
+        existing = db.query(Bucket).filter(Bucket.name == name).first()
+        if existing:
+            flash(f'A bucket with name "{name}" already exists', 'error')
+            return redirect(url_for('buckets'))
+        
+        # Create new bucket
+        bucket = Bucket(name=name, description=description)
+        
+        # Add selected instruments to bucket
+        if instrument_ids:
+            instruments = db.query(Instrument).filter(Instrument.id.in_(instrument_ids)).all()
+            bucket.instruments = instruments
+        
+        db.add(bucket)
+        db.commit()
+        
+        flash(f'Bucket "{name}" created successfully', 'success')
+        return redirect(url_for('buckets'))
+
+@app.route('/buckets/<int:bucket_id>/edit', methods=['GET', 'POST'])
+def edit_bucket(bucket_id):
+    db = next(get_db())
+    bucket = db.query(Bucket).get(bucket_id)
+    
+    if not bucket:
+        flash('Bucket not found', 'error')
+        return redirect(url_for('buckets'))
+    
+    if request.method == 'POST':
+        name = request.form.get('bucket_name')
+        description = request.form.get('description', '')
+        instrument_ids = request.form.getlist('instruments')
+        
+        if not name:
+            flash('Bucket name is required', 'error')
+            return redirect(url_for('edit_bucket', bucket_id=bucket_id))
+        
+        # Check if new name already exists (excluding this bucket)
+        existing = db.query(Bucket).filter(
+            Bucket.name == name, 
+            Bucket.id != bucket_id
+        ).first()
+        
+        if existing:
+            flash(f'A bucket with name "{name}" already exists', 'error')
+            return redirect(url_for('edit_bucket', bucket_id=bucket_id))
+        
+        # Update bucket
+        bucket.name = name
+        bucket.description = description
+        
+        # Update instruments
+        if instrument_ids:
+            instruments = db.query(Instrument).filter(Instrument.id.in_(instrument_ids)).all()
+            bucket.instruments = instruments
+        else:
+            bucket.instruments = []
+        
+        db.commit()
+        flash(f'Bucket "{name}" updated successfully', 'success')
+        return redirect(url_for('buckets'))
+    
+    # GET request
+    instruments = db.query(Instrument).all()
+    return render_template(
+        'edit_bucket.html', 
+        bucket=bucket, 
+        instruments=instruments, 
+        selected_instruments=[i.id for i in bucket.instruments]
+    )
+
+@app.route('/buckets/<int:bucket_id>/delete', methods=['POST'])
+def delete_bucket(bucket_id):
+    db = next(get_db())
+    bucket = db.query(Bucket).get(bucket_id)
+    
+    if not bucket:
+        flash('Bucket not found', 'error')
+        return redirect(url_for('buckets'))
+    
+    bucket_name = bucket.name
+    db.delete(bucket)
+    db.commit()
+    
+    flash(f'Bucket "{bucket_name}" deleted successfully', 'success')
+    return redirect(url_for('buckets'))
 
 if __name__ == '__main__':
     app.run(debug=True)
